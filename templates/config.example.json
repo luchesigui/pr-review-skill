@@ -1,0 +1,90 @@
+{
+  "version": 2,
+  "user": {
+    "name": "Your Name",
+    "github_login": "",
+    "screenshot_dir": ""
+  },
+  "default_repo": "",
+  "docs": {
+    "mode": "skill",
+    "folder": "",
+    "per_repo_subfolder": true,
+    "external_front_matter": false
+  },
+  "author_notes": {
+    "mode": "propose",
+    "extra_files": []
+  },
+  "issue_tracker": {
+    "type": "github",
+    "pattern": "(?:close[sd]?|fix(?:e[sd])?|resolve[sd]?|refs?)\\s+#(\\d+)|#(\\d+)",
+    "org": "",
+    "project": "",
+    "url_template": ""
+  },
+  "design": {
+    "mode": "off",
+    "figma_map": "",
+    "browser_preview": false,
+    "local_preview_url": "",
+    "credentials_env": ""
+  },
+  "agents": {
+    "preset": "native",
+    "timeout_seconds": 900,
+    "roles": {
+      "design": {
+        "enabled": "auto",
+        "provider": "native",
+        "model": "sonnet",
+        "effort": "low",
+        "mcp_tools": []
+      },
+      "reuse": {
+        "enabled": true,
+        "provider": "native",
+        "model": "sonnet",
+        "effort": "low"
+      },
+      "general": {
+        "enabled": true,
+        "provider": "native",
+        "model": "sonnet",
+        "effort": "low"
+      },
+      "general_escalated": {
+        "enabled": true,
+        "provider": "native",
+        "model": "opus",
+        "effort": "low"
+      },
+      "claim": {
+        "enabled": "auto",
+        "provider": "native",
+        "model": "sonnet",
+        "effort": "low"
+      },
+      "da_overflow": {
+        "enabled": "auto",
+        "provider": "native",
+        "model": "sonnet",
+        "effort": "low"
+      }
+    },
+    "custom_commands": {}
+  },
+  "routing": {
+    "small_diff_max_files": 5,
+    "small_diff_max_lines": 50,
+    "escalate_min_lines": 800,
+    "ui_extensions": [".tsx", ".jsx", ".vue", ".svelte", ".scss", ".css", ".less"],
+    "shared_prefixes": ["libs/", "packages/", "shared/"]
+  },
+  "hooks": {
+    "pre_review": "",
+    "post_review": "",
+    "outcomes": ""
+  },
+  "extra_linters": []
+}
