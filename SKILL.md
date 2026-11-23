@@ -66,7 +66,8 @@ Work in `<DIR>`, the absolute path named by the harness file. Subagents see noth
    - `jira` / `linear`: read-only via the configured MCP server (issue title, status, description, AC, linked/next stories, comments).
    - Structure `ticket.md` in plain text: Header (`id`, `type`, `state`, `rev`, `changed_by`, `url`), Description, Acceptance criteria (`AC1..ACn`), Decided approach (`AP1..APn`, only when prescribed), Out of scope, Comments, Parent, Linked items, Next stories (up to 8 open follow-up stories, 5–15 lines each, or `none`).
    - If no ticket ID is found or fetch fails: write one line in `ticket.md` (never a finding against the author); in unattended mode also add `"ticket: <reason>"` to `not_verified`.
-4. **Design check**: when `meta.json["has_ui"]` is true and `meta.json["design_mode"] != "off"`, inspect `designs.md` and `figma-files.md`. If `design_mode == "figma-mcp"` and neither has a link or matching app area, ask the user for a design link (or skip Design if they say so; unattended: skip and record in `agents`/`not_verified`).
+4. **Project review profile:** Use the generated `<DIR>/repo-profile.md` alongside the shared briefs in full, shallow, and recheck modes. Apply learned checks when their trigger matches the current change. Use historical references to understand why a check exists. Verify each finding against the current head.
+5. **Design check**: when `meta.json["has_ui"]` is true and `meta.json["design_mode"] != "off"`, inspect `designs.md` and `figma-files.md`. If `design_mode == "figma-mcp"` and neither has a link or matching app area, ask the user for a design link (or skip Design if they say so; unattended: skip and record in `agents`/`not_verified`).
 
 ## 2. Spawn the agents (full mode)
 
@@ -202,12 +203,12 @@ After the user reacts to a review (drops, rewrites, adds comments) or asks to ca
 1. Measure outcomes first:
    - If `hooks.outcomes` is set in `config.json`, run it.
    - Else if `docs.mode != "none"`, run `python3 -I <SKILL_DIR>/scripts/outcomes.py`.
-2. Read the PR's `outcomes.json` (if available) and `<STATE_DIR>/past-reviews.md`.
+2. Read the PR's `outcomes.json` (if available), relevant entries in `<STATE_DIR>/past-reviews.md`, and the matching `<STATE_DIR>/repos/<slug>.md`. Use the user's feedback and verified PR evidence to distinguish reusable lessons from one-off outcomes. A posted comment is evidence of what the reviewer chose to raise. Verify the underlying behavior before turning it into a check.
 3. **Propose** each update clearly before writing it:
-   - Dropped comment → tighten `<STATE_DIR>/repos/<slug>.md` ("Not worth raising") or a brief rule.
+   - Dropped comment → propose a scoped exception in `<STATE_DIR>/repos/<slug>.md` under "Not worth raising" when the same rationale applies to future changes.
    - Rewritten comment → adjust `<STATE_DIR>/voice.md`.
-   - Missed comment the user added → add a concrete concern to `<STATE_DIR>/repos/<slug>.md` or [agents.md](agents.md).
-   - DA false drop → note which defense failed.
+   - Confirmed miss, peer finding the user wants to learn from, or incorrect Devil's Advocate dismissal → propose a "Learned checks" entry in `<STATE_DIR>/repos/<slug>.md` with a trigger, what to verify, and a source PR or local review reference. Update a matching entry when new evidence refines it. Keep one-off observations in the history. A single case can justify a check when the consequence is clear and the same mechanism can recur.
+   - Keep this calibration in local state. Propose changes to the shared briefs only when the user asks to improve the public skill and the lesson applies across repositories.
    - **Author mannerism** (when `author_notes.mode != "off"` and this review/recheck revealed a concrete, recurring review behavior — e.g. silently resolving unfixed threads, backing pushback with accurate specs, preferring chat on large PRs):
      - If `author_notes.mode == "propose"` (default): propose the exact one-line factual observation with PR number to the user; on approval run:
        ```
@@ -215,6 +216,6 @@ After the user reacts to a review (drops, rewrites, adds comments) or asks to ca
        ```
      - If `author_notes.mode == "auto"`: record directly and mention it in the summary.
      - Keep author notes strictly factual, tied to PR numbers, and focused on review/collaboration patterns (never personal judgments, never quoted in PR comments).
-   - Append a one-line summary to `<STATE_DIR>/past-reviews.md`.
+4. Append a one-line summary of the calibration and its source to `<STATE_DIR>/past-reviews.md`. Apply confirmed profile entries on later reviews when the current diff touches their trigger. Findings still need current-head evidence and the usual gate.
 
 Ask before removing or reversing an existing rule.

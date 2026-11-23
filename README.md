@@ -123,10 +123,14 @@ python3 -I scripts/doctor.py
 | `/review-pr 123` *(or PR URL)* | Full parallel review (auto-downgrades to shallow on tiny non-UI, non-sensitive diffs) |
 | `/review-pr shallow 123` | Fast single-pass review inline (no external subagents, skips Design) |
 | `/review-pr recheck 123` | Verifies every posted thread (open **and** resolved) against head code, summarizes open peer threads, detects reverted files and side effects, and proposes new author notes if warranted |
-| `/review-pr grow` | Matches drafted comments against what you posted on GitHub and proposes improvements to your voice, repo rules, briefs, and author profiles |
+| `/review-pr grow` | Matches drafted comments against what you posted on GitHub and proposes updates to your local voice, learned project checks, and author profiles |
 | `/review-pr authors` | Lists tracked PR authors and their review notes |
 | `/review-pr setup` | Reconfigure models, docs mode, tracker, or integrations |
 | `/review-pr doctor` | Run environment and config health checks |
+
+### How review experience feeds future reviews
+
+The shared briefs cover general review topics. Each review also loads the profile for that repository from your local state. Use `/review-pr grow` after giving feedback or identifying a missed issue to propose a learned check with a trigger, a verification step, and a reference to the review it came from. Later reviews apply the check when the change matches its trigger. Confirm the underlying behavior on the current PR before drafting a finding.
 
 ### 4. Optional Customization
 
