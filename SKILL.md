@@ -85,6 +85,8 @@ Write each applicable brief from [agents.md](agents.md) to `<DIR>/briefs/<role>.
 
 **Stack-split General:** when `meta.json["split_general_by_language"]` is true (cross-stack PR that is sensitive or exceeds `escalate_min_lines`), spawn one General brief per stack (e.g. frontend vs backend) on `general_escalated`. Give each brief its file list plus the cross-stack contract boundary (errors, DTOs, retries).
 
+**Stateful cross-stack changes:** trace an affected path for each changed operation that can resume, retry, or partially succeed. At the pinned head, follow caller state through the service decision, remote or persisted state, response, and retry or cleanup. When General is split by stack, compare the evidence from both passes. Reconcile conflicting assumptions about identity, ownership, error categories, and the lifetime of state. Apply any relevant checks from the generated `<DIR>/repo-profile.md`. Record consequential gaps in `Not verified` with what would settle them. The same trace applies inline in shallow mode when relevant.
+
 **Dispatching each role** (per `config.agents.roles.<role>.provider`):
 - If `provider == "native"`: spawn using the current harness's read-only subagent tool (see your harness file), passing the brief path and configured `model`/`effort`.
 - Otherwise (`claude`, `codex`, `grok`, `gemini`, or custom): run in parallel background commands via:

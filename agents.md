@@ -165,6 +165,12 @@ schemas, tests, and the repo's conventions and best practices.
    Cross-boundary contract check: when the diff changes an API/REST/RPC/GraphQL DTO field, request
    payload, or response total, search the opposite stack (frontend <-> backend/services) for that
    field name to verify producers and consumers agree (including initial values, resets, fallbacks).
+   For changed stateful operations, trace the applicable failure and retry paths. Check identity
+   sources on creation, lookup and cleanup; state lifetime across requests, flags and retained
+   records; structured error translation through the client; and sensitive fields in stored or
+   replayed responses. Review duplicate branch conditions or metadata builders when divergence
+   changes behavior. Check repeated payload parsing on changed hot paths. Use the concrete checks
+   in <DIR>/repo-profile.md where applicable.
    Look for:
    - an early return or swallowed error that leaves the user with no feedback;
    - for every new failure the server can return, follow it back to the UI/caller and verify the

@@ -26,6 +26,7 @@ For each posted comment, assign one verdict: **fixed**, **half-fixed**, **not fi
 ## 3. Check peer threads, reverts, and fix-commit side effects
 
 - **Other reviewers' open threads:** Inspect `Other reviewers' open threads` in `<DIR>/existing-comments.md` (and `meta.json["peer_open_threads"]`). Summarize any unresolved peer threads (especially blocking ones). Do not draft unrequested comments on them unless the user is already in the thread or asked, **and never return `verdict: "ready to approve"` silently while blocking peer threads remain open** — use `"our threads clear (peer threads open)"` instead.
+- **Changed stateful flow:** Repeat the affected end-to-end trace in SKILL.md §2 using the current head and repo profile. Check the reported scenario and another affected path, such as a retry after partial success or a failure that leaves existing state in place. Check agreed ordering or ownership decisions against the actual call sequence. Record runtime or external behavior that still needs verification.
 - **Reverts:** Check `reverted_files_dropped_from_pr_diff` in `<DIR>/recheck-info.md`. A file edited in one commit and reverted in a later commit drops out of `pr.diff` while still deciding runtime behavior.
 - **New-code side effects & extra linters:** Skim added lines in `<DIR>/recheck.diff` for:
   - dead wiring (a new prop/flag added with no caller);
