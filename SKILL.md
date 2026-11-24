@@ -1,6 +1,6 @@
 ---
 name: review-pr
-description: Evidence-based pull request review skill for GitHub repositories. Runs parallel specialist agents (Design, Reuse, General, Claim) using your configured AI providers/models, gates every finding deterministically against the real diff and head checkout, runs Devil's Advocate, formats comments in your voice, and tracks PR author mannerisms and review outcomes over time. Supports full, shallow, recheck, setup, doctor, and grow modes.
+description: Evidence-based pull request review skill for GitHub repositories. Runs parallel specialist agents (Design, Reuse, General, Claim) using your configured AI providers/models, gates every finding deterministically against the real diff and head checkout, runs Devil's Advocate, formats comments in your voice, and tracks PR author mannerisms and review outcomes over time. Supports full, shallow, recheck, stage, setup, doctor, and grow modes.
 ---
 
 # Pull Request Review
@@ -35,6 +35,7 @@ Before step 1:
 | `"we have updates"`, `"recheck"`, `"author pushed fixes"` | **recheck**: no specialist agents; follow [recheck.md](recheck.md). |
 | `"grow"`, `"calibrate"`, `"update skill from outcomes"` | **grow**: follow Section 7. |
 | `"authors"`, `"who have I reviewed"` | **authors**: run `python3 -I <SKILL_DIR>/scripts/authors.py list` (or `show <login>`). |
+| `"stage PR 123"`, `"draft the comments on GitHub"` | **stage** (opt-in, only when the user explicitly asks; never unattended): run `python3 -I <SKILL_DIR>/scripts/stage.py <n>` (add `--gh-repo`, `--only`/`--skip`, `--no-body` as asked; `--dry-run` first if unsure). It pushes the latest validated round's `findings[]` as a **pending** GitHub review that only the user sees until they submit it. Report the printed URL, or the refusal reason as-is. |
 
 Any review/recheck mode can be **unattended** (prompt ends with `unattended`, e.g. started by an external scheduler/dashboard):
 - Never ask the user anything. If Design has no matching frame → skip Design and record `"design: skipped, no matching frame"` in `agents`/`not_verified`.
@@ -149,8 +150,9 @@ Read `<STATE_DIR>/voice.md` if it exists (fall back to [templates/voice.example.
 - **Self-PRs (`meta.json["is_self_pr"]`):** skip draft review summary; offer to apply fixes directly on the branch instead.
 
 **Posting (only when the user explicitly asks):**
-- Tell the user which comments need pasted images (comment link + image path).
-- Re-check `headRefOid` right before posting. Before `PATCH`ing an existing comment, back up its old body to `<DIR>`.
+- Post through **stage** mode (`scripts/stage.py`): it creates a pending review from the validated round; the user edits and submits it in GitHub's Files changed tab. Replies in existing threads and findings without a file/line are refused; the user posts those by hand (or `--skip` them).
+- Tell the user which comments need pasted images (comment link + image path); they can add them while the review is still pending.
+- Re-check `headRefOid` right before posting (`stage.py` refuses a moved head unless `--allow-moved-head`; prefer a recheck instead). Before `PATCH`ing an existing comment, back up its old body to `<DIR>`.
 - A one-line comment can't become multi-line (delete & repost only if no replies). An empty ```` ```suggestion ```` block deletes the anchored lines.
 
 ## 6. Output, validation & documentation
