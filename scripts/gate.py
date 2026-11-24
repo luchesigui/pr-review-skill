@@ -331,6 +331,10 @@ def check_round_schema(data):
                 errors.append(f"{fid}: unrecognized agent names {bad_ag} (allowed: {sorted(allowed_agents)})")
         if f.get("file") and f.get("line") and not f.get("hunk"):
             errors.append(f"{fid}: missing `hunk` (run with --fill-hunks)")
+        if f.get("file"):
+            cc = f.get("code_context")
+            if not isinstance(cc, str) or not cc.strip():
+                errors.append(f"{fid}: missing `code_context` (1-2 sentences on what the snippet does and why it was written this way for the ticket)")
     return errors
 
 

@@ -171,6 +171,7 @@ Out of scope per ticket: <one line>
 
 ### path/to/file.tsx
 1. [major|minor|nit] [design|reuse|shape|schema|correctness|claim|roadmap|tests|conventions] L42 - <one-line claim>
+   context: <1-2 neutral sentences: what this code does and why it was implemented this way in the context of the ticket/PR>
    evidence: `<exact code quote>` (+ `<existing path:line>` / design value)
    devil's advocate: STANDS - <...> | DEFENSIBLE - <...>
    existing comments: NEW | FOLLOW-UP of <author> <path:line> (<status>) | HOLD until <thread>
@@ -184,7 +185,7 @@ Out of scope per ticket: <one line>
 An honest clean review beats a manufactured finding. Keep tooling issues out of the PR output.
 
 **Validate, clean up, and document (per `meta.json["docs_mode"]`):**
-1. Write the round JSON to `meta.json["round_path"]` using `python3 -I` and `json.dump` (creating parent dirs). Only `STANDS` and `DEFENSIBLE` go in `findings[]` (never `UNVERIFIED` or `DROPPED`), with real `session` id and valid `agents` names (`design`, `reuse`, `general`, `claim`, `orchestrator`, `recheck`, `peer-reply`, `reviewer`). Include `"is_self_pr": meta["is_self_pr"]`.
+1. Write the round JSON to `meta.json["round_path"]` using `python3 -I` and `json.dump` (creating parent dirs). Only `STANDS` and `DEFENSIBLE` go in `findings[]` (never `UNVERIFIED` or `DROPPED`), with real `session` id and valid `agents` names (`design`, `reuse`, `general`, `claim`, `orchestrator`, `recheck`, `peer-reply`, `reviewer`). For every code-anchored finding, include `"code_context"`: 1–2 neutral sentences explaining what the anchored snippet does and why it was implemented this way in the context of the ticket (or PR goal when there is no ticket), giving quick orientation on the diff preview without repeating the finding itself. Include `"is_self_pr": meta["is_self_pr"]`.
 2. Run the final gate with schema validation and automatic hunk extraction:
    ```
    python3 -I <SKILL_DIR>/scripts/gate.py <round_path> --diff <DIR>/pr.diff --head <DIR>/head --validate-round --fill-hunks

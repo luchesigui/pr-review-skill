@@ -55,7 +55,7 @@ Recheck `verdict` values:
 
 Before finishing:
 1. Build the round JSON (`meta.json["round_path"]`) with `python3 -I` and `json.dump`:
-   - `kind: "recheck"`, real `session` id from the harness file (never a placeholder), `recheck: [...]` table, `verdict`, and `findings: [...]` (only `STANDS`/`DEFENSIBLE` drafted follow-ups; set `agents: "recheck"` or `"peer-reply"`, and keep all required schema fields). Put unverified items in `unverified[]`, never in `findings[]`.
+   - `kind: "recheck"`, real `session` id from the harness file (never a placeholder), `recheck: [...]` table, `verdict`, and `findings: [...]` (only `STANDS`/`DEFENSIBLE` drafted follow-ups; set `agents: "recheck"` or `"peer-reply"`, and keep all required schema fields including `code_context`: 1–2 neutral sentences on what the anchored snippet does and why it was implemented this way in the context of the ticket/PR). Put unverified items in `unverified[]`, never in `findings[]`.
 2. Run the gate with schema validation and hunk fill:
    ```
    python3 -I <SKILL_DIR>/scripts/gate.py <round_path> --diff <DIR>/pr.diff --head <DIR>/head --validate-round --fill-hunks
