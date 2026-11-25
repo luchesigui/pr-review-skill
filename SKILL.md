@@ -1,6 +1,6 @@
 ---
 name: review-pr
-description: Evidence-based pull request review skill for GitHub repositories. Runs parallel specialist agents (Design, Reuse, General, Claim) using your configured AI providers/models, gates every finding deterministically against the real diff and head checkout, runs Devil's Advocate, formats comments in your voice, and tracks PR author mannerisms and review outcomes over time. Supports full, shallow, recheck, stage, setup, doctor, and grow modes.
+description: Evidence-based pull request review skill for GitHub repositories. Runs parallel specialist agents (Design, Reuse, General, Claim) using your configured AI providers/models, gates every finding deterministically against the real diff and head checkout, runs Devil's Advocate, formats comments in your voice, and tracks PR author mannerisms and review outcomes over time. Supports full, shallow, recheck, stage, setup, models, doctor, and grow modes.
 ---
 
 # Pull Request Review
@@ -28,7 +28,8 @@ Before step 1:
 
 | Request | Mode |
 |---|---|
-| `"setup"`, `"configure"`, `"change models"` | **setup**: run [setup.md](setup.md). |
+| `"setup"`, `"configure"` | **setup**: run [setup.md](setup.md). |
+| `"models"`, `"change models"` | **models**: open the reviewer model picker, display settings with `models list`, or apply an explicit update. |
 | `"doctor"`, `"check setup"` | **doctor**: run `python3 -I <SKILL_DIR>/scripts/doctor.py` and report any issues. |
 | `"review PR 123"`, `"review this PR"`, `"review <url>"` | **full** (default): routed specialist agents in parallel, then deterministic gate & Devil's Advocate. Auto-downgrades to **shallow** when `meta.json["small_diff_eligible"]` is true and `ticket.md` has no complex AC/approach. |
 | `"shallow review"`, `"quick review"` | **shallow**: orchestrator runs Reuse, General, and Claim checks inline, skips Design, then runs gate & Devil's Advocate. |
@@ -36,6 +37,8 @@ Before step 1:
 | `"grow"`, `"calibrate"`, `"update skill from outcomes"` | **grow**: follow Section 7. |
 | `"authors"`, `"who have I reviewed"` | **authors**: run `python3 -I <SKILL_DIR>/scripts/authors.py list` (or `show <login>`). |
 | `"stage PR 123"`, `"draft the comments on GitHub"` | **stage** (opt-in, only when the user explicitly asks; never unattended): run `python3 -I <SKILL_DIR>/scripts/stage.py <n>` (add `--gh-repo`, `--only`/`--skip`, `--no-body` as asked; `--dry-run` first if unsure). It pushes the latest validated round's `findings[]` as a **pending** GitHub review that only the user sees until they submit it. Report the printed URL, or the refusal reason as-is. |
+
+For bare `/review-pr models` (Codex: `$review-pr models`), direct the user to run `review-pr-models` in their terminal for the keyboard-driven picker. The portable invocation is `python3 -I <SKILL_DIR>/scripts/models.py --pick`. The picker requires a user-controlled terminal. A shell tool's PTY belongs to the agent and cannot accept the user's arrow keys. For `models list`, run `scripts/models.py --list`. Apply explicit selections with `models.py <role> [--provider <provider>] [--model <id>] [--effort <effort>]`, passing only the requested fields. Pass `--model ""` for the provider default. Repo-profile overrides still take precedence.
 
 Any review/recheck mode can be **unattended** (prompt ends with `unattended`, e.g. started by an external scheduler/dashboard):
 - Never ask the user anything. If Design has no matching frame → skip Design and record `"design: skipped, no matching frame"` in `agents`/`not_verified`.
@@ -91,7 +94,7 @@ Write each applicable brief from [agents.md](agents.md) to `<DIR>/briefs/<role>.
 
 **Dispatching each role** (per `config.agents.roles.<role>.provider`):
 - If `provider == "native"`: spawn using the current harness's read-only subagent tool (see your harness file), passing the brief path and configured `model`/`effort`.
-- Otherwise (`claude`, `codex`, `grok`, `gemini`, or custom): run in parallel background commands via:
+- Otherwise (`claude`, `codex`, `grok`, `gemini`, `agy`, or custom): run in parallel background commands via:
   ```
   python3 -I <SKILL_DIR>/scripts/run_agent.py \
     --role <role> --brief <DIR>/briefs/<role>.md \

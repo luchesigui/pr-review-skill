@@ -20,19 +20,7 @@ If `gh` is missing or unauthenticated, tell the user to run `gh auth login` firs
 
 ## Step 2: Configure AI providers & models per task
 
-Offer presets based on `available_ai_clis`, then let the user accept defaults or customize any role:
-
-| Preset | Design | Reuse | General | General (escalated / sensitive) | Claim |
-|---|---|---|---|---|---|
-| **Native (current AI only)** | `native` (default, low) | `native` (default, low) | `native` (default, low) | `native` (stronger/default, medium) | `native` (default, low) |
-| **Claude-only** | `claude` / `sonnet` (low) | `claude` / `sonnet` (low) | `claude` / `sonnet` (low) | `claude` / `opus` (low, medium if sensitive) | `claude` / `sonnet` (low) |
-| **Codex-only** | `codex` / default (low) | `codex` / default (low) | `codex` / default (low) | `codex` / default (medium) | `codex` / default (low) |
-| **Multi-AI ensemble** *(when multiple CLIs detected)* | `claude` / `sonnet` (low) | `grok` / `grok-4` (low) | `claude` / `sonnet` (low) | `claude` / `opus` (low, medium if sensitive) | `codex` / default (low) |
-| **Custom** | User picks provider (`native`, `claude`, `codex`, `grok`, `gemini`, or custom command) + model + effort per role | | | | |
-
-Notes:
-- Remind the user they can disable any role (`enabled: false`) — e.g. disable `design` if they don't do frontend/Figma reviews.
-- Exact model names are stored in `config.json` so users can pin any model ID their CLI supports.
+Follow [the provider and model picker](model-picker.md). Ask which providers to use, fetch their catalogs, and let the user choose from the returned models before continuing.
 
 ## Step 3: PR documentation mode
 

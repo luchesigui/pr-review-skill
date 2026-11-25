@@ -5,7 +5,7 @@
 
 ## Agents & runners
 
-- For roles configured with an external CLI provider (`claude`, `codex`, `grok`, `gemini`, or custom), invoke `<SKILL_DIR>/scripts/run_agent.py` in parallel background commands.
+- For roles configured with an external CLI provider (`claude`, `codex`, `grok`, `gemini`, `agy`, or custom), invoke `<SKILL_DIR>/scripts/run_agent.py` in parallel background commands.
 - For roles configured with `provider: "native"` (or as a fallback if a configured CLI is unavailable), spawn Codex's own read-only subagents (one per brief) and note any substitution in the `Agents:` line.
 
 ## Tools

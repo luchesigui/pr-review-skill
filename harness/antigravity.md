@@ -5,7 +5,7 @@
 
 ## Agents & runners
 
-- For roles configured with an external CLI provider (`claude`, `codex`, `grok`, `gemini`, or custom), invoke `<SKILL_DIR>/scripts/run_agent.py` in parallel background commands.
+- For roles configured with an external CLI provider (`claude`, `codex`, `grok`, `gemini`, `agy`, or custom), invoke `<SKILL_DIR>/scripts/run_agent.py` in parallel background commands.
 - For roles configured with `provider: "native"` (or as a fallback if a configured CLI is unavailable), use `invoke_subagent` (read-only `research` subagent or read-only custom subagent, one per brief) and note any substitution in the `Agents:` line.
 - Note for native Design fallback: Antigravity exposes browser tools through the `chrome-devtools` MCP server (`call_mcp_tool` on `chrome-devtools`), and skips Figma visual comparison unless a Figma-capable runner (`claude`) or Figma MCP is configured.
 

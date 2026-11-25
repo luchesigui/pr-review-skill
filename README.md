@@ -100,7 +100,7 @@ Run `/review-pr setup` (or run `/review-pr 123` directly — it launches setup a
 
 The setup flow detects your GitHub login and installed AI CLIs, then walks you through:
 
-1. **AI providers & models per task** — pick a preset (`native`, `claude-only`, `codex-only`, `multi-ai`) or assign a provider, model, and reasoning effort per role (`design`, `reuse`, `general`, `general_escalated`, `claim`, `da_overflow`).
+1. **AI providers and models** — choose the providers you use, then pick from their CLI or API model catalogs. Use one provider/model pair across roles or choose per role.
 2. **PR documentation mode**:
    - `skill` *(default)* — saves PR notes and round JSONs in gitignored `local/reviews/<owner>__<repo>/`.
    - `folder` — writes PR notes and `.data/` to a separate folder (e.g. an Obsidian vault or external dashboard).
@@ -127,6 +127,8 @@ python3 -I scripts/doctor.py
 | `/review-pr authors` | Lists tracked PR authors and their review notes |
 | `/review-pr stage 123` | Opt-in: pushes the latest validated round's findings to GitHub as a **pending** review (only you see it until you submit it). Refuses if the head moved, an anchor is outside the diff, or you already have a pending review. `python3 -I scripts/stage.py 123 --dry-run` previews it |
 | `/review-pr setup` | Reconfigure models, docs mode, tracker, or integrations |
+| `/review-pr models` | Show how to launch the terminal model picker (Codex: `$review-pr models`) |
+| `/review-pr models list` | Show the current reviewer settings |
 | `/review-pr doctor` | Run environment and config health checks |
 
 ### How review experience feeds future reviews
@@ -138,3 +140,7 @@ The shared briefs cover general review topics. Each review also loads the profil
 - **Per-repo rules:** Copy `templates/repo-profile.example.md` to `local/repos/<owner>__<repo>.md` for repo-specific conventions and "Not worth raising" items. Add `local/repos/<owner>__<repo>.json` to override stack prefixes, sensitive regexes, extra linters (e.g. Stylelint), issue tracker, or Figma config for that repo.
 - **External dashboards & schedulers:** Set `hooks.pre_review`, `hooks.post_review`, and `hooks.outcomes` in `local/config.json` and consume the validated `round-<k>.json` files. Unattended runs (`/review-pr <n> unattended`) skip interactive prompts and hooks automatically.
 - **Custom state directory:** Set `REVIEW_PR_HOME=/path/to/dir` to store all personal state outside the skill folder.
+
+### Terminal model picker
+
+Run `python3 -I scripts/models.py --pick` from the skill directory. Use the arrow keys to pick a role, provider, and model. Press Enter to advance and Esc to go back. Confirm a selection to save it and return to the role list.

@@ -2,7 +2,7 @@
 """Provider-agnostic read-only agent runner and routing planner for /review-pr.
 
 Dispatches a specialist brief to the CLI/provider configured in local/config.json:
-  claude | codex | grok | gemini | custom | native
+  claude | codex | grok | gemini | agy | custom | native
 
 Usage:
     # Print planned agents, providers, models, and effort for a gathered PR:
@@ -122,6 +122,20 @@ def build_command(provider, role_cfg, brief_path, cwd, work_dir, effort, repo_di
             cmd += ["--model", model]
         if effort:
             cmd += ["--reasoning-effort", effort]
+        return cmd, cwd, None
+
+    if provider == "agy":
+        exe = shutil.which("agy")
+        if not exe:
+            raise RuntimeError("`agy` CLI not found in PATH")
+        cmd = [exe, "--mode", "plan", "--sandbox", "--disable-slash-commands"]
+        if model:
+            cmd += ["--model", model]
+        # Catalog IDs can encode an effort tier. Honor the selected variant as-is.
+        if effort and not model.endswith(("-low", "-medium", "-high", "-xhigh", "-max")):
+            cmd += ["--effort", effort]
+        brief_text = open(brief_path, encoding="utf-8").read()
+        cmd += ["--print", brief_text]
         return cmd, cwd, None
 
     if provider == "gemini":
