@@ -168,6 +168,12 @@ Group by file in diff order, most important first within a file:
 Agents: design <...>, reuse <...>, general <...>, claim <...>
 Not verified: <...>
 
+### What changed
+
+For every **interactive full review** and **shallow review** (explicit or auto-downgraded), add this section after the head-movement check and before Ticket or findings, including when the review is clean. Write one concise paragraph per meaningful functional or architectural change. Lead with the impact, then explain what changed and the author's implementation choice: where state/data lives, which pieces call or update which others, the relevant boundaries, and how the pieces fit together. Describe the design, not an inventory of files, components, or hooks. Use the reviewed diff and pinned head as evidence; never describe a stale snapshot as current.
+
+Raise a specific review question or alternative only when a mechanism in the diff makes a plausible consequence worth checking. Separate observed behavior from unverified behavior or intent. No obligatory criticism, no bypassing the gated findings process, and don't repeat a formal finding here. A short path/symbol reference and the existing full diff may support the overview; don't add hunks or a diff parser. Leave unattended output unchanged.
+
 ### Ticket <id> <title> (<type>, <state>)   (omit if no ticket)
 | # | Criterion / approach / decision | Verdict | Where |
 |---|---|---|---|
