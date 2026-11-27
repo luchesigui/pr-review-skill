@@ -1,8 +1,11 @@
 #!/usr/bin/env python3
-"""Stage a validated round's findings on GitHub as a PENDING (unsubmitted) review. Opt-in only.
+"""Stage a validated round's findings on GitHub as a PENDING (unsubmitted) review, or post them. Opt-in only.
 
     python3 -I stage.py <pr> [--gh-repo owner/repo] [--round <round-k.json>] [--only f1,f2] [--skip f3]
-                             [--no-body] [--dry-run] [--allow-moved-head]
+                             [--no-body] [--dry-run] [--allow-moved-head] [--post]
+
+Default (stage): a pending review only the user sees until they submit it in GitHub.
+--post: the same review is submitted right away as a COMMENT review, visible to everyone.
 
 Refuses unless every check passes:
   schema    the round passes gate.py's round schema check and is not blocked
@@ -11,7 +14,8 @@ Refuses unless every check passes:
   diff      every line / start_line sits on the RIGHT side of one hunk of the current PR diff
   pending   the authenticated user has no PENDING review on the PR already (GitHub allows one)
 
-The POST omits `event`, so GitHub keeps the review pending and visible only to you until you submit it.
+Staging omits `event`, so GitHub keeps the review pending and visible only to you until you submit it.
+--post sends `event: COMMENT`, so GitHub publishes it immediately (never APPROVE or REQUEST_CHANGES).
 """
 import argparse
 import datetime
@@ -80,7 +84,7 @@ def moved_hunk_warnings(findings, diff_text):
     return warns
 
 
-def build_payload(findings, commit_id, body=None):
+def build_payload(findings, commit_id, body=None, post=False):
     comments = []
     for f in findings:
         c = {"path": f["file"], "line": int(f["line"]), "side": "RIGHT", "body": f["comment"]}
@@ -91,6 +95,8 @@ def build_payload(findings, commit_id, body=None):
     payload = {"commit_id": commit_id, "comments": comments}
     if body and body.strip():
         payload["body"] = body
+    if post:
+        payload["event"] = "COMMENT"
     return payload
 
 
@@ -109,8 +115,8 @@ def pending_reviews(gh_repo, pr, login):
     return out
 
 
-def record_staging(round_path, data, review):
-    data["staged"] = {
+def record_staging(round_path, data, review, key="staged"):
+    data[key] = {
         "review_id": review.get("id"),
         "url": review.get("html_url"),
         "commit_id": review.get("commit_id"),
@@ -130,7 +136,7 @@ def fail(errors, header):
 
 
 def main():
-    ap = argparse.ArgumentParser(description="Stage round findings as a pending GitHub review.")
+    ap = argparse.ArgumentParser(description="Stage round findings as a pending GitHub review, or post them with --post.")
     ap.add_argument("pr", type=int)
     ap.add_argument("--gh-repo", help="owner/repo (default: config default_repo, then the current checkout)")
     ap.add_argument("--round", help="round JSON path (default: latest round-<k>.json for the PR)")
@@ -139,6 +145,7 @@ def main():
     ap.add_argument("--no-body", action="store_true", help="don't use review_summary as the review body")
     ap.add_argument("--dry-run", action="store_true", help="run every check and print the payload; no POST")
     ap.add_argument("--allow-moved-head", action="store_true", help="stage on the current head even if it moved since the round")
+    ap.add_argument("--post", action="store_true", help="submit the review as a COMMENT right away instead of leaving it pending")
     a = ap.parse_args()
 
     cfg = common.load_config()
@@ -163,6 +170,8 @@ def main():
     errors = gate.check_round_schema(data)
     if errors:
         fail(errors, "round schema check failed (fix it and re-run gate.py --validate-round)")
+    if data.get("posted"):
+        fail([f"posted before: {data['posted'].get('url')}"], "this round was already posted")
     if data.get("staged"):
         print(f"note: this round was already staged before: {data['staged'].get('url')}")
 
@@ -201,9 +210,9 @@ def main():
              + ["submit or delete it in GitHub first (GitHub allows one pending review per user)"], "pending review exists")
 
     body = None if a.no_body or data.get("is_self_pr") else data.get("review_summary")
-    payload = build_payload(findings, commit_id, body)
+    payload = build_payload(findings, commit_id, body, post=a.post)
 
-    print(f"{gh_repo}#{a.pr} as {login}, commit {commit_id[:10]}, {len(payload['comments'])} comment(s), "
+    print(f"{'POST' if a.post else 'stage'} {gh_repo}#{a.pr} as {login}, commit {commit_id[:10]}, {len(payload['comments'])} comment(s), "
           f"body: {'yes' if 'body' in payload else 'no'}")
     for f, c in zip(findings, payload["comments"]):
         span = f"{c['start_line']}-{c['line']}" if "start_line" in c else str(c["line"])
@@ -217,12 +226,17 @@ def main():
     r = gh(["api", "--method", "POST", f"repos/{gh_repo}/pulls/{a.pr}/reviews", "--input", "-"],
            input_text=json.dumps(payload))
     review = json.loads(r.stdout)
-    if review.get("state") != "PENDING":
-        print(f"WARN: GitHub returned state {review.get('state')!r}, expected PENDING")
+    expected = "COMMENTED" if a.post else "PENDING"
+    if review.get("state") != expected:
+        print(f"WARN: GitHub returned state {review.get('state')!r}, expected {expected}")
     try:
-        record_staging(round_path, data, review)
+        record_staging(round_path, data, review, key="posted" if a.post else "staged")
     except OSError as e:
-        print(f"WARN: couldn't record staging in the round file: {e}")
+        print(f"WARN: couldn't record the review in the round file: {e}")
+    if a.post:
+        print(f"posted: {review.get('html_url')}")
+        print("This review is PUBLISHED: the author and everyone on the PR can see it.")
+        return
     print(f"staged: {review.get('html_url')}")
     print("This review is PENDING: only you can see it. Edit, add images, and submit it from GitHub's Files changed tab.")
 

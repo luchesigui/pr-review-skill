@@ -1,13 +1,13 @@
 ---
 name: review-pr
-description: Evidence-based pull request review skill for GitHub repositories. Runs parallel specialist agents (Design, Reuse, General, Claim) using your configured AI providers/models, gates every finding deterministically against the real diff and head checkout, runs Devil's Advocate, formats comments in your voice, and tracks PR author mannerisms and review outcomes over time. Supports full, shallow, recheck, stage, setup, models, doctor, and grow modes.
+description: Evidence-based pull request review skill for GitHub repositories. Runs parallel specialist agents (Design, Reuse, General, Claim) using your configured AI providers/models, gates every finding deterministically against the real diff and head checkout, runs Devil's Advocate, formats comments in your voice, and tracks PR author mannerisms and review outcomes over time. Supports full, shallow, recheck, stage (pending review), post (published review), setup, models, doctor, and grow modes.
 ---
 
 # Pull Request Review
 
 You are reviewing on the user's behalf. The goal is a high-signal, low-noise review: few comments, each pointing at something that already exists, a simpler shape, a real defect, a missed requirement, or a design mismatch, with a concrete suggestion — every finding verified deterministically and challenged by Devil's Advocate before it is shown.
 
-Read-only for everyone involved: never edit the repository, commit, push, post comments, approve, or request changes unless the user explicitly asks to post.
+Read-only for everyone involved: never edit the repository, commit, push, post comments, approve, or request changes unless the user explicitly asks to stage or post (see **stage** vs **post** below; they are different requests).
 
 Out of scope everywhere: formatting or lint rules already enforced by the repository's CI, moves that only reshuffle code without clear benefit (extract method, rename for taste, add narrating comments), comment/doc reflows, and cosmetic polish on internal docs/Storybook unless requested. Check `<DIR>/repo-profile.md` for additional repo-specific exclusions.
 
@@ -36,7 +36,8 @@ Before step 1:
 | `"we have updates"`, `"recheck"`, `"author pushed fixes"` | **recheck**: no specialist agents; follow [recheck.md](recheck.md). |
 | `"grow"`, `"calibrate"`, `"update skill from outcomes"` | **grow**: follow Section 7. |
 | `"authors"`, `"who have I reviewed"` | **authors**: run `python3 -I <SKILL_DIR>/scripts/authors.py list` (or `show <login>`). |
-| `"stage PR 123"`, `"draft the comments on GitHub"` | **stage** (opt-in, only when the user explicitly asks; never unattended): run `python3 -I <SKILL_DIR>/scripts/stage.py <n>` (add `--gh-repo`, `--only`/`--skip`, `--no-body` as asked; `--dry-run` first if unsure). It pushes the latest validated round's `findings[]` as a **pending** GitHub review that only the user sees until they submit it. Report the printed URL, or the refusal reason as-is. |
+| `"stage PR 123"`, `"stage them"`, `"draft the comments on GitHub"` | **stage** (opt-in, only when the user explicitly asks; never unattended): run `python3 -I <SKILL_DIR>/scripts/stage.py <n>` (add `--gh-repo`, `--only`/`--skip`, `--no-body` as asked; `--dry-run` first if unsure). It pushes the latest validated round's `findings[]` as a **pending** GitHub review that only the user sees; the user double-checks it in GitHub and submits it. Report the printed URL, or the refusal reason as-is. |
+| `"post them"`, `"post the comments"`, `"post PR 123"` | **post** (opt-in, only when the user explicitly says post; never unattended): run `python3 -I <SKILL_DIR>/scripts/stage.py <n> --post` (same flags and checks as stage; `--dry-run` first). It submits the review right away as a `COMMENT` review that the author and everyone else see. Never use APPROVE or REQUEST_CHANGES. "Post" never means stage: if you are unsure which one the user wants, ask. Report the printed URL. |
 
 For bare `/review-pr models` (Codex: `$review-pr models`), direct the user to run `review-pr-models` in their terminal for the keyboard-driven picker. The portable invocation is `python3 -I <SKILL_DIR>/scripts/models.py --pick`. The picker requires a user-controlled terminal. A shell tool's PTY belongs to the agent and cannot accept the user's arrow keys. For `models list`, run `scripts/models.py --list`. Apply explicit selections with `models.py <role> [--provider <provider>] [--model <id>] [--effort <effort>]`, passing only the requested fields. Pass `--model ""` for the provider default. Repo-profile overrides still take precedence.
 
@@ -152,10 +153,12 @@ Read `<STATE_DIR>/voice.md` if it exists (fall back to [templates/voice.example.
 - **Tone:** argue from why it matters (never `"I prefer"`), label taste honestly (`"nit:"`), no praise padding, one topic per comment, anchored on a diff line.
 - **Self-PRs (`meta.json["is_self_pr"]`):** skip draft review summary; offer to apply fixes directly on the branch instead.
 
-**Posting (only when the user explicitly asks):**
-- Post through **stage** mode (`scripts/stage.py`): it creates a pending review from the validated round; the user edits and submits it in GitHub's Files changed tab. Replies in existing threads and findings without a file/line are refused; the user posts those by hand (or `--skip` them).
-- Tell the user which comments need pasted images (comment link + image path); they can add them while the review is still pending.
-- Re-check `headRefOid` right before posting (`stage.py` refuses a moved head unless `--allow-moved-head`; prefer a recheck instead). Before `PATCH`ing an existing comment, back up its old body to `<DIR>`.
+**Staging vs posting (only when the user explicitly asks):**
+- **Stage** (`scripts/stage.py <n>`): creates a pending review from the validated round; only the user sees it until they edit and submit it in GitHub's Files changed tab.
+- **Post** (`scripts/stage.py <n> --post`): submits the same review immediately as a `COMMENT`, so it is public on the PR. Use it only when the user says "post"; the comments shown in the review are what they approved.
+- Both refuse replies in existing threads and findings without a file/line; the user posts those by hand (or `--skip` them). Both refuse while the user already has a pending review on the PR; offer to submit that pending review instead when the user asked to post.
+- Tell the user which comments need pasted images (comment link + image path). They can add images while a staged review is still pending; after a post they edit the published comment to add them.
+- Re-check `headRefOid` right before staging or posting (`stage.py` refuses a moved head unless `--allow-moved-head`; prefer a recheck instead). Before `PATCH`ing an existing comment, back up its old body to `<DIR>`.
 - A one-line comment can't become multi-line (delete & repost only if no replies). An empty ```` ```suggestion ```` block deletes the anchored lines.
 
 ## 6. Output, validation & documentation

@@ -6,7 +6,7 @@ A portable, read-only pull request review skill for **Claude Code**, **Codex**, 
 
 Most AI PR reviews skim a diff once and produce noisy, generic, or hallucinated comments. `/review-pr` is built to produce **high-signal, low-noise reviews in your own voice**:
 
-- **Read-only by design** — never edits your repo, pushes, posts comments, or approves unless you explicitly ask (`/review-pr stage` drafts a pending review for you to submit).
+- **Read-only by design** — never edits your repo, pushes, posts comments, or approves unless you explicitly ask (`/review-pr stage` drafts a pending review for you to double-check and submit; "post" submits it directly).
 - **Evidence-first** — every comment must anchor on a real diff line, quote real code from the PR head, and cite verified file paths/symbols.
 - **Multi-perspective & model-flexible** — runs up to four focused specialist reviewers in parallel, each configurable to whichever AI provider and model you want (single-provider or multi-model ensemble).
 - **Self-challenging** — runs a deterministic gate script and a Devil's Advocate pass before showing you anything, filtering out duplicates, already-raised threads, out-of-scope nits, and false positives.
@@ -126,6 +126,7 @@ python3 -I scripts/doctor.py
 | `/review-pr grow` | Matches drafted comments against what you posted on GitHub and proposes updates to your local voice, learned project checks, and author profiles |
 | `/review-pr authors` | Lists tracked PR authors and their review notes |
 | `/review-pr stage 123` | Opt-in: pushes the latest validated round's findings to GitHub as a **pending** review (only you see it until you submit it). Refuses if the head moved, an anchor is outside the diff, or you already have a pending review. `python3 -I scripts/stage.py 123 --dry-run` previews it |
+| "post them" / `/review-pr post 123` | Opt-in: same checks as stage, but `stage.py 123 --post` submits the review right away as a public `COMMENT` review (never approve or request changes) |
 | `/review-pr setup` | Reconfigure models, docs mode, tracker, or integrations |
 | `/review-pr models` | Show how to launch the terminal model picker (Codex: `$review-pr models`) |
 | `/review-pr models list` | Show the current reviewer settings |
